@@ -1,5 +1,5 @@
 {
-  "name": "web-fe",
+  "name": "watching-fe",
   "private": true,
   "version": "0.0.0",
   "type": "module",
@@ -10,10 +10,12 @@
   },
   "dependencies": {
     "ant-design-vue": "^4.2.1",
-    "vue": "^3.4.21"
+    "vue": "^3.4.21",
+    "vue-router": "^4.3.2"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "^5.0.4",
+    "sass": "^1.76.0",
     "vite": "^5.2.0"
   }
 }
