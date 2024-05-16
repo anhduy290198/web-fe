@@ -2,7 +2,7 @@
     <div class="layout">
         <Header></Header>
         <router-view></router-view>
-        <Footer></Footer>
+        <!-- <Footer></Footer> -->
     </div>
 </template>
 
@@ -12,5 +12,7 @@ import Footer from './Common/Footer.vue';
 </script>
 
 <style lang="scss" scoped>
-
+    .layout{
+        background: #fff;
+    }
 </style>
