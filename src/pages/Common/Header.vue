@@ -84,7 +84,7 @@ const changeMenu = () =>{
             break;
     }
     router.push({
-        name: "Phone",
+        component: name,
         query: route.query
     });
 }

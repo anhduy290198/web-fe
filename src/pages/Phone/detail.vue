@@ -1,11 +1,11 @@
 <template>
-    <div class="phone">
-        <ListProduct :type="'phone'"/>
+    <div class="product">
+        <DetailProduct />
     </div>
 </template>
 
 <script setup>
-import ListProduct from "../../components/Common/ListProduct";
+import DetailProduct from "../../components/common/DetailProduct.vue";
 
 </script>
 
