@@ -1,5 +1,5 @@
 <template>
-    <div class="product">
+    <div class="detail-product">
         123
     </div>
 </template>
@@ -13,6 +13,9 @@ const route = useRoute();
 const router = useRouter();
 </script>
 
-<style>
-
+<style lang="scss" scoped>
+.detail-product{
+    width: 70%;
+    margin: 0 auto;
+}
 </style>
