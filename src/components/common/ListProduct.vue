@@ -48,7 +48,7 @@
                         {{product.name}}
                     </div>
                     <div class="product-price">
-                        {{product.price}}
+                        {{formatPrice(product.price)}}
                     </div>
                 </div>
                 <div class="product-action">
@@ -59,9 +59,6 @@
                         Thêm vào giỏ
                     </a-button>
                     <a-button>
-                        <template #icon>
-                            <shopping-cart-outlined />
-                        </template>
                         Mua ngay
                     </a-button>
                 </div>
@@ -160,9 +157,13 @@ const handleChange = () =>{
 
 const detailProduct = () => {
     router.push({
-        component: 'PhoneDetail',
-        query: route.query
+        name: 'PhoneDetail',
+        params: {id : 1},
     });
+}
+
+const formatPrice = (price) => {
+  return price.toLocaleString('it-IT', {style : 'currency', currency : 'VND'});
 }
 
 </script>
