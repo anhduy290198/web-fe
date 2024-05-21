@@ -81,16 +81,16 @@ const router = useRouter();
 const title = computed(() => {
     let title = 'Trang chủ';
     switch (props.type) {
-        case 'phone':
+        case 'Phone':
             title = "Điện thoại"
             break;
-        case 'laptop':
+        case 'Laptop':
             title = "Laptop"
             break;
-        case 'tivi':
+        case 'Tivi':
             title = "Tivi"
             break;
-        case 'accessory':
+        case 'Accessory':
             title = "Phụ kiện"
             break;
         default:
@@ -156,9 +156,13 @@ const handleChange = () =>{
 }
 
 const detailProduct = () => {
+    let query = {
+        type: route.query.type,
+        id :  1
+    }
     router.push({
-        name: 'PhoneDetail',
-        params: {id : 1},
+        name: 'Detail',
+        query: query,
     });
 }
 
