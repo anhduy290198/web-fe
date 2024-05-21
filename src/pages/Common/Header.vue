@@ -5,7 +5,7 @@
             <div class="text">Online Shop</div>
         </div>
         <div class="menu">
-            <a-menu v-model:selectedKeys="menuActive" mode="horizontal" style="width: 600px" @click="changeMenu()">
+            <a-menu v-model:selectedKeys="menuActive" mode="horizontal" style="width: 600px" @click="changeMenu($event)">
                 <a-menu-item key="home">
                     <template #icon>
                         <home-outlined />
@@ -133,36 +133,37 @@ const listBanner = [
 
 const checkAdmin = ref(false);
 
-const changeMenu = () =>{
-    let key = menuActive.value[0];
-    console.log(key);
-    let name = '';
+const changeMenu = (data) =>{
+    let key = data.key;
+    let type = '';
     switch (key) {
         case 'phone':
-            name = "Phone"
+            type = "Phone"
             break;
         case 'laptop':
-            name = "Laptop"
+            type = "Laptop"
             break;
         case 'tivi':
-            name = "Tivi"
+            type = "Tivi"
             break;
         case 'accessory':
-            name = "Accessory"
+            type = "Accessory"
             break;
         case 'home':
-            name = "Home"
+            type = "Home"
             break;
     }
-    let params = null
+    let query = null
+    let name ="Home";
     if(key !== "home"){
-        params = {
-            type: key
+        query = {
+            type: type
         }
+        name = "List"
     }
     router.push({
         name: name,
-        params: params
+        query: query
     });
 }
 const cart = () =>{
@@ -180,7 +181,7 @@ const login = () => {
 }
 const logout = () => {
     user.value = null;
-    changeMenu("home");
+    changeMenu({key: "home"});
 }
 
 const disabledLogin = computed(() => {

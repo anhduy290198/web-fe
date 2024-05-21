@@ -6,6 +6,8 @@ import PhoneDetail from "../pages/Phone/detail.vue";
 import Cart from "../pages/Cart.vue";
 import Pay from "../pages/Pay.vue";
 import CreateProduct from "../pages/Admin/createProduct.vue"
+import ListProduct from "../pages/Product/List.vue";
+import DetailProduct from "../pages/Product/Detail.vue";
 
 const routes = [
     {
@@ -22,13 +24,29 @@ const routes = [
         },
     },
     {
-        path: '/phone/:id',
-        name: "PhoneDetail",
-        component: PhoneDetail ,
+        path: '/list',
+        name: "List",
+        component: ListProduct ,
         meta: {
-            title: 'Điện thoại',
+            title: 'Danh sách sản phẩm',
         },
     },
+    {
+        path: '/detail',
+        name: "Detail",
+        component: DetailProduct ,
+        meta: {
+            title: 'Chi tiết sản phẩm',
+        },
+    },
+    // {
+    //     path: '/phone/:id',
+    //     name: "PhoneDetail",
+    //     component: PhoneDetail ,
+    //     meta: {
+    //         title: 'Điện thoại',
+    //     },
+    // },
     {
         path: '/cart',
         name: "Cart",
