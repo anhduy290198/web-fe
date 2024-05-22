@@ -1,11 +1,10 @@
 import { createRouter, createWebHistory } from "vue-router"
 
 import Home from "../pages/Home/index.vue";
-import Phone from "../pages/Phone/index.vue";
-import PhoneDetail from "../pages/Phone/detail.vue";
 import Cart from "../pages/Cart.vue";
 import Pay from "../pages/Pay.vue";
-import CreateProduct from "../pages/Admin/createProduct.vue"
+import AdminCreateProduct from "../pages/Admin/AdminCreateProduct.vue";
+import AdminListProduct from "../pages/Admin/AdminListProduct.vue";
 import ListProduct from "../pages/Product/List.vue";
 import DetailProduct from "../pages/Product/Detail.vue";
 
@@ -14,14 +13,6 @@ const routes = [
         path: '/',
         name: "Home",
         component: Home
-    },
-    {
-        path: '/phone',
-        name: "Phone",
-        component: Phone ,
-        meta: {
-            title: 'Điện thoại',
-        },
     },
     {
         path: '/list',
@@ -39,14 +30,6 @@ const routes = [
             title: 'Chi tiết sản phẩm',
         },
     },
-    // {
-    //     path: '/phone/:id',
-    //     name: "PhoneDetail",
-    //     component: PhoneDetail ,
-    //     meta: {
-    //         title: 'Điện thoại',
-    //     },
-    // },
     {
         path: '/cart',
         name: "Cart",
@@ -65,11 +48,21 @@ const routes = [
     },
     {
         path: '/admin',
-        name: "Admin",
-        component: CreateProduct ,
+        name: "AdminListProduct",
+        component: AdminListProduct ,
         meta: {
-            title: 'Thanh toán',
+            title: 'Quản trị viên',
         },
+        children: [
+            {
+                path: '/create',
+                name: "AdminCreateProduct",
+                component: AdminCreateProduct ,
+                meta: {
+                    title: 'Quản trị viên 1',
+                },
+            },
+        ]
     },
 ];
 

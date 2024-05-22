@@ -66,7 +66,7 @@
             </a-dropdown>
             
         </div>
-        <a-modal :visible="checkModal" title="Đăng nhập" :footer="null">
+        <a-modal :visible="checkModal" title="Đăng nhập" :footer="null" @cancel="checkModal = false">
             <a-form
                 :model="formState"
                 name="basic"
