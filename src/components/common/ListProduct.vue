@@ -21,7 +21,7 @@
                         </a-select>
                     </div>
                 </div>
-                <div class="filter-detail">
+                <div class="filter-detail" style="margin-left: 30px">
                     <div class="label">
                         Sản phẩm mới cũ
                     </div>
@@ -41,32 +41,37 @@
         <a-empty v-if="!dataSource.length" :description="false">
             Không có dữ liệu
         </a-empty>
-        <div class="list-product" v-else>
-            <div class="product" v-for="product in dataSource" :key="product">
-                <div class="cursor-pointer" @click="detailProduct(product)">
-                    <div class="product-image">
-                        <img :src="product.image">
-                    </div>
-                    <div class="product-name">
-                        {{product.name}}
-                    </div>
-                    <div class="product-price">
-                        {{formatPrice(product.price)}}
+        <template v-else>
+            <a-spin :spinning="loadingData">
+                <div class="list-product" >
+                    <div class="product" v-for="product in dataSource" :key="product">
+                        <div class="cursor-pointer" @click="detailProduct(product)">
+                            <div class="product-image">
+                                <img :src="product.image[0]">
+                            </div>
+                            <div class="product-name">
+                                {{product.name}}
+                            </div>
+                            <div class="product-price">
+                                {{formatPrice(product.price)}}
+                            </div>
+                        </div>
+                        <div class="product-action">
+                            <a-button @click="addToCart(product)">
+                                <template #icon>
+                                    <shopping-cart-outlined />
+                                </template>
+                                Thêm vào giỏ
+                            </a-button>
+                            <a-button :disabled="true">
+                                Mua ngay
+                            </a-button>
+                        </div>
                     </div>
                 </div>
-                <div class="product-action">
-                    <a-button>
-                        <template #icon>
-                            <shopping-cart-outlined />
-                        </template>
-                        Thêm vào giỏ
-                    </a-button>
-                    <a-button>
-                        Mua ngay
-                    </a-button>
-                </div>
-            </div>
-        </div>
+            </a-spin>
+        </template>
+            
         <div class="pagination">
             <a-pagination v-model:current="currentPage" :total="listProduct.length" show-less-items />
         </div>
@@ -75,17 +80,18 @@
 
 <script setup>
 import apiProduct from "../../api/product"
-import { ref, defineComponent , computed,  onBeforeMount } from "vue";
+import { ref, defineComponent , computed,  onBeforeMount , watch , onMounted } from "vue";
 import { TabletOutlined, HomeOutlined, LaptopOutlined , UsbOutlined , DesktopOutlined , ShoppingCartOutlined , UserOutlined} from '@ant-design/icons-vue';
 import { useRoute } from 'vue-router';
 import { useRouter } from 'vue-router';
+import { message, Modal } from "ant-design-vue";
 
 const route = useRoute();
 const router = useRouter();
 const idCategory = ref();
 const listProduct = ref([]);
 const textSearch = ref("");
-const loadingData = ref(false);
+const loadingData = ref(true);
 
 const filterPrice = ref();
 const filterDate = ref();
@@ -95,17 +101,56 @@ const props = defineProps({
 });
 
 //created
-onBeforeMount( async () => {
-    let res = await apiProduct.getListProduct({
-        id_category: 1
-    });
+onBeforeMount( () => {
+    getListProduct();
+    console.log(props.type);
+});
+
+onMounted(() => {
+    console.log(props.type);
+})
+
+
+
+watch(props.type, (value) => {
+    console.log(value);
+});
+
+const getIdCategory = () =>{
+    let category = '';
+    let data = route.query.type;
+    console.log(route.query.type);
+    if(data === "Phone"){
+        category = 1
+    }else if(data === "Laptop"){
+        category = 2
+    }else if(data === "Tivi"){
+        category = 3
+    }else{
+        category = 4
+    }
+    return category;
+}
+
+
+const getListProduct = async (type) =>{
+    let params = {
+        id_category: getIdCategory(props.type)
+    }
+    if(type){
+        params.type = type ? type : null;
+        params.filter = type ? type === 'price' ? filterPrice.value : filterDate.value : null
+    }
+    let res = await apiProduct.getListProduct(params);
+
     if(res.status){
         res.data.forEach(product => {
             product.image = JSON.parse(product.image);
         });
         listProduct.value  = res.data;
     }
-});
+    loadingData.value = false;
+}
 
 const title = computed(() => {
     let title = 'Trang chủ';
@@ -134,7 +179,6 @@ const title = computed(() => {
 });
 
 const dataSource = computed(()=>{
-    loadingData.value = true;
     let listSearch = textSearch.value.toLowerCase().split(" ");
     let data = listProduct.value;
     data = data.filter(ele =>{
@@ -143,20 +187,24 @@ const dataSource = computed(()=>{
         );
         return resSearch
     })
-
     return data;
 })
 
 
 
 const handleFilterPrice = () =>{
-
+    filterDate.value = '';
+    textSearch.value = '';
+    getListProduct('price');
 }
 const handleFilterDate = () =>{
-
+    filterPrice.value = '';
+    textSearch.value = '';
+    getListProduct('created_at');
 }
 
 const detailProduct = (product) => {
+    console.log(product.id);
     let query = {
         type: route.query.type,
         id :  product.id
@@ -169,6 +217,30 @@ const detailProduct = (product) => {
 
 const formatPrice = (price) => {
   return price.toLocaleString('it-IT', {style : 'currency', currency : 'VND'});
+}
+
+const addToCart = (product) =>{
+    let cart = localStorage.getItem("cart");
+    let listProduct = [];
+    if(cart){
+        listProduct = JSON.parse(cart);
+    }
+
+    if(listProduct.length){
+        let index = listProduct.findIndex(ele => product.id === ele.id);
+        if(index > -1){
+            listProduct[index].amount++;
+        }else{
+            product.amount = 1;
+            listProduct.push(product);
+        }
+    }else{
+        product.amount = 1;
+        listProduct.push(product);
+    }
+    localStorage.setItem("cart", JSON.stringify(listProduct))
+
+    message.success("Thêm vào giỏ hàng thành công");
 }
 
 const vnToStr = (text) => {
@@ -241,7 +313,7 @@ const vnToStr = (text) => {
         .product{
             border: 1px solid #ddd;
             border-radius: 10px;
-            width: 300px;
+            width: 280px;
             margin-bottom: 100px;
             padding: 20px 10px;
             box-shadow: 0px 0px 2px rgba(145, 158, 171, 0.2), 0px 12px 24px -4px rgba(145, 158, 171, 0.12);
@@ -289,7 +361,8 @@ const vnToStr = (text) => {
     .pagination{
         display: flex;
         justify-content: end;
-        margin-top: 20px;
+        margin: 20px 0;
+        padding-bottom: 50px;
     }
     .cursor-pointer{
         cursor: pointer;

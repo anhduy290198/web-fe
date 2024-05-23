@@ -1,5 +1,10 @@
 <template>
     <div class="admin">
+        <div class="back">
+            <a-button @click="back">
+                Quay lại
+            </a-button>
+        </div>
         <div class="title">Tạo sản phẩm</div>
         <div class="create-product">
             <a-form :model="formState"
@@ -85,6 +90,7 @@ import { useRouter } from 'vue-router';
 import { PlusOutlined } from '@ant-design/icons-vue';
 import apiProduct from "../../api/product";
 import apiCategory from "../../api/category";
+import { message, Modal } from "ant-design-vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -126,13 +132,18 @@ const create = () =>{
         description: formState.description,
         image: files.value
     }
-    apiProduct.CreateProduct(params);
-    // console.log(params);
-    // files.value.click();
+    apiProduct.CreateProduct(params).then(res =>{
+        if(res.status){
+            message.success('Tạo sản phẩm thành công');
+        }
+    });
     
 }
 
 const addImage = () =>{
+    if(!urlImage.value){
+        return
+    }
     files.value.push(urlImage.value);
     urlImage.value = "";
 }
@@ -148,12 +159,23 @@ const handleInputFile = (evt)=>{
     // nameFile.value = file.name;
     // fileImport.value = file;
 }
+
+const back = () =>{
+    router.push({
+        name: "AdminListProduct"
+    })
+}
 </script>
 
 <style lang="scss" scoped>
 .admin{
     width: 70%;
     margin: 0 auto;
+    position: relative;
+    .back{
+        position: absolute;
+        top: 30px;
+    }
     .title{
         text-align: center;
         font-size: 50px;

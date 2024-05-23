@@ -14,7 +14,8 @@ export default {
         });
     },
     getListProduct: (data) => {
-        const url = `http://api-web-shop.dev.local/list-product?id_category=`+data.id_category;
+        let params = new URLSearchParams(data);
+        const url = `http://api-web-shop.dev.local/list-product?`+params;
         return new Promise((resolve, reject) => {
             axios.get(url)
                 .then((response) => {
@@ -26,7 +27,8 @@ export default {
         });
     },
     getDetailProduct: (data) => {
-        const url = `http://api-web-shop.dev.local/detail-product?id_product=`+data.id_product;
+        let params = new URLSearchParams(data);
+        const url = `http://api-web-shop.dev.local/detail-product?`+params;
         return new Promise((resolve, reject) => {
             axios.get(url)
                 .then((response) => {

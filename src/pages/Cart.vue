@@ -2,11 +2,21 @@
     <div class="cart">
         <div class="title">Giỏ hàng</div>
         <div class="content">
-            <a-table :dataSource="data" :columns="columns" :pagination="false"/>
+            <a-table :dataSource="data" :columns="columns" :pagination="false">
+                <template #bodyCell="{ column,record, index }">
+                    <template v-if="column.dataIndex === 'action'">
+                        <a-button @click="deleteProduct(record,index)">
+                                <template #icon>
+                                    <delete-outlined />
+                                </template>
+                            </a-button>
+                    </template>
+                </template>
+            </a-table>
         </div>
 
         <div class="buy">
-            <a-button @click="buy">
+            <a-button @click="buy" :disabled="!data.length">
                 Đặt hàng
             </a-button>
         </div>
@@ -14,9 +24,10 @@
 </template>
 
 <script setup>
-import { ref, defineComponent , computed} from "vue";
+import { ref, defineComponent , computed, onBeforeMount, watch} from "vue";
 import { useRoute } from 'vue-router';
 import { useRouter } from 'vue-router';
+import { EditOutlined , DeleteOutlined , ExclamationCircleOutlined } from '@ant-design/icons-vue';
 
 const route = useRoute();
 const router = useRouter();
@@ -36,24 +47,43 @@ const columns = [
         dataIndex: 'amount',
         key: 'amount',
     },
+    {
+        title: '',
+        dataIndex: 'action',
+        key: 'action',
+        align: 'center'
+    },
 ];
-const data = ref([
-    {
-        name: 'Iphone 14 Pro Max 256 GB',
-        amount: 1,
-        price: 10000000,
-    },
-    {
-        name: 'Iphone 14 Pro Max 256 GB',
-        amount: 1,
-        price: 10000000,
-    },
-    {
-        name: 'Iphone 14 Pro Max 256 GB',
-        amount: 1,
-        price: 10000000,
-    },
-])
+const data = ref([]);
+
+//created
+onBeforeMount( async () => {
+    getListProduct();
+});
+
+
+
+const getListProduct = async () =>{
+    let cart = await localStorage.getItem("cart");
+    let listProduct = [];
+    if(cart){
+        listProduct = JSON.parse(cart);
+    }
+    data.value = listProduct;
+
+}
+
+const deleteProduct = async (product,index) =>{
+    data.value.splice(index,1);
+    let cart = await localStorage.getItem("cart");
+    let listProduct = JSON.parse(cart);
+    index = listProduct.findIndex(ele => ele.id === product.id);
+    if(index > -1){
+        listProduct.splice(index,1);
+        localStorage.setItem("cart", JSON.stringify(listProduct))
+    }
+}
+
 
 const buy = () =>{
     router.push({

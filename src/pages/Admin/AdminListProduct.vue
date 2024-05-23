@@ -1,10 +1,32 @@
 <template>
     <div class="cart">
         <div class="title">Danh sách sản phẩm</div>
-        <a-button @click="createProduct">Tạo sản phẩm mới</a-button>
+        <div class="search">
+            
+                <div class="filter">
+                    <div class="input-search">
+                        <a-input-search v-model:value="textSearch"  placeholder="Nhập tên sản phẩm"/>
+                    </div>
+                    <div class="filter-detail">
+                        <div class="label">
+                            Danh mục
+                        </div>
+                        <div class="filter-type">
+                            <a-select
+                                v-model:value="categoryId"
+                                style="width: 160px"
+                                @change="getListProduct"
+                                >
+                                <a-select-option v-for="category in listCategory" :value="category.id" :key="category.id">{{category.name}}</a-select-option>
+                            </a-select>
+                        </div>
+                    </div>
+                </div>
+                <a-button @click="createProduct">Tạo sản phẩm mới</a-button>
+            </div>
         <div class="content">
-            <a-table :dataSource="data" :columns="columns" :pagination="false">
-                <template #bodyCell="{ column,record, index }">
+            <a-table :dataSource="dataSource" :columns="columns" :loading="loadingData">
+                <template #bodyCell="{ column,record }">
                     <template v-if="column.dataIndex === 'action'">
                         <div style="display: flex; justify-content: space-around">
                             <a-button @click="editProduct(record)">
@@ -12,14 +34,13 @@
                                     <edit-outlined />
                                 </template>
                             </a-button>
-                            <a-button @click="deleteProduct">
+                            <a-button @click="deleteProduct(record)">
                                 <template #icon>
                                     <delete-outlined />
                                 </template>
                             </a-button>
                         </div>
                     </template>
-                    
                 </template>
             </a-table>
         </div>
@@ -28,12 +49,16 @@
 </template>
 
 <script setup>
-import { ref, defineComponent , computed} from "vue";
+import { ref, defineComponent , computed , onBeforeMount , createVNode } from "vue";
 import { useRoute } from 'vue-router';
 import { useRouter } from 'vue-router';
-import { EditOutlined , DeleteOutlined } from '@ant-design/icons-vue';
+import { EditOutlined , DeleteOutlined , ExclamationCircleOutlined } from '@ant-design/icons-vue';
+import { message, Modal } from "ant-design-vue";
 const route = useRoute();
 const router = useRouter();
+import apiProduct from "../../api/product";
+import apiCategory from "../../api/category";
+import category from "../../api/category";
 const columns = [
     {
         title: 'Tên',
@@ -47,8 +72,8 @@ const columns = [
     },
     {
         title: 'Số lượng',
-        dataIndex: 'amount',
-        key: 'amount',
+        dataIndex: 'quantity',
+        key: 'quantity',
     },
     {
         title: 'Hành động',
@@ -57,23 +82,50 @@ const columns = [
         width: 150
     },
 ];
-const data = ref([
-    {
-        name: 'Iphone 14 Pro Max 256 GB',
-        amount: 1,
-        price: 10000000,
-    },
-    {
-        name: 'Iphone 14 Pro Max 256 GB',
-        amount: 1,
-        price: 10000000,
-    },
-    {
-        name: 'Iphone 14 Pro Max 256 GB',
-        amount: 1,
-        price: 10000000,
-    },
-])
+const listProduct = ref([]);
+const listCategory = ref([]);
+const categoryId = ref('');
+const textSearch = ref('');
+const loadingData = ref(true);
+
+//created
+onBeforeMount( () => {
+    getListProduct();
+    getListCategory();
+});
+
+
+const getListCategory = async () =>{
+    let res = await apiCategory.listCategory();
+    if(res.status){
+        listCategory.value  = res.data
+    }
+}
+
+
+const getListProduct = async () =>{
+    let params = {}
+    if(categoryId.value){
+        params.id_category = categoryId.value
+    }
+    let res = await apiProduct.getListProduct(params);
+    if(res.status){
+        listProduct.value  = res.data;
+    }
+    loadingData.value = false;
+}
+
+const dataSource = computed(()=>{
+    let listSearch = textSearch.value.toLowerCase().split(" ");
+    let data = listProduct.value;
+    data = data.filter(ele =>{
+        let resSearch = listSearch.every(search => 
+            vnToStr(ele.name).toLowerCase().indexOf(vnToStr(search)) > -1
+        );
+        return resSearch
+    })
+    return data;
+})
 
 const createProduct = () =>{
     router.push({
@@ -91,8 +143,41 @@ const editProduct = (product) =>{
 }
 
 
-const deleteProduct = () =>{
+const deleteProduct = (product) =>{
+    
 
+    // Modal.confirm({
+    //     title: 'Xóa sản phẩm?',
+    //     icon: createVNode(ExclamationCircleOutlined),
+    //    content: createVNode('div', { style: 'color:#000000D9;' }, 'Bạn có chắc chắn muốn xóa sản phẩm này?'),
+    //     onOk() {
+    //         apiProduct.DeleteProduct({
+    //             id: product.id
+    //         }).then(res =>{
+    //             if(res.status){
+    //                 message.success("Xóa sản phẩm thành công");
+    //                 getListProduct();
+    //             }
+    //         }).catch(e =>{
+    //             message.error("Xóa sản phẩm thất bại");
+    //         })
+    //     },
+    //     onCancel() {
+    //     },
+    //     okText: "Xóa",
+    //     cancelText: "Huỷ",
+    //   });
+
+        apiProduct.DeleteProduct({
+            id: product.id
+        }).then(res =>{
+            if(res.status){
+                message.success("Xóa sản phẩm thành công");
+                getListProduct();
+            }
+        }).catch(e =>{
+            message.error("Xóa sản phẩm thất bại");
+        })
 }
 
 const buy = () =>{
@@ -100,6 +185,26 @@ const buy = () =>{
         name: "Pay",
         query: route.query
     })
+}
+
+const vnToStr = (text) => {
+    if (typeof text !== 'string') return;
+
+    text = text.toLowerCase();
+    text = text.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a");
+    text = text.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e");
+    text = text.replace(/ì|í|ị|ỉ|ĩ/g, "i");
+    text = text.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, "o");
+    text = text.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u");
+    text = text.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y");
+    text = text.replace(/đ/g, "d");
+    text = text.replace(
+        /!|@|%|\^|\*|\(|\)|\+|\=|\<|\>|\?|\/|,|\.|\:|\;|\'|\"|\&|\#|\[|\]|~|\$|_|`|-|{|}|\||\\/g,
+        " "
+    );
+    text = text.replace(/\s+/g, " ");
+    text = text.trim();
+    return text;
 }
 </script>
 
@@ -112,6 +217,30 @@ const buy = () =>{
         font-size: 50px;
         line-height: 100px;
         margin: 20px 0;
+    }
+    .search{
+        margin-top: 10px;
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 50px;
+        .input-search{
+            width: 40%;
+        }
+        .filter{
+            width: 80%;
+            display: flex;
+            gap: 10px;
+            .filter-detail{
+                display: flex;
+                .label{
+                    line-height: 32px;
+                    margin-right: 10px;
+                }
+                .filter-type{
+                    margin-left: 5px;
+                }
+            }
+        }
     }
     .buy{
         text-align: right;

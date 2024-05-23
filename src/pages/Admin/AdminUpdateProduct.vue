@@ -1,5 +1,10 @@
 <template>
     <div class="admin">
+        <div class="back">
+            <a-button @click="back">
+                Quay lại
+            </a-button>
+        </div>
         <div class="title">Tạo sản phẩm</div>
         <div class="create-product">
             <a-form :model="formState"
@@ -20,12 +25,7 @@
                     name="category"
                     :rules="[{ required: true, message: 'Vui lòng chọn danh mục!' }]"
                     >
-                    <a-select
-                        v-model:value="formState.category"
-                        style="width: 120px"
-                        >
-                        <a-select-option v-for="category in listCategory" :key="category.id" :value="category.id">{{category.name}}</a-select-option>
-                        </a-select>
+                    <div>{{getCategory(formState.category)}}</div>
                 </a-form-item>
                 <a-form-item
                     label="Giá"
@@ -54,7 +54,6 @@
                 <a-form-item
                     label="Ảnh"
                     name="image"
-                    :rules="[{ required: true, message: 'Vui lòng nhập giá!' }]"
                     >
                     <div style="display: flex; justify-content: space-between">
                         <a-input v-model:value="urlImage" style="width: 85%;"></a-input>
@@ -72,7 +71,7 @@
                 </a-form-item>
 
                 <a-form-item  :wrapper-col="{ offset: 12, span: 16 }">
-                    <a-button :disabled="disabled" @click="create">Tạo sản phẩm</a-button>
+                    <a-button :disabled="disabled" @click="update">Cập nhật sản phẩm</a-button>
                 </a-form-item>
             </a-form>
         </div>
@@ -85,6 +84,8 @@ import { useRoute } from 'vue-router';
 import { useRouter } from 'vue-router';
 import { PlusOutlined } from '@ant-design/icons-vue';
 import apiProduct from "../../api/product";
+import { message, Modal } from "ant-design-vue";
+import category from "../../api/category";
 
 const route = useRoute();
 const router = useRouter();
@@ -104,13 +105,22 @@ const previewImage = ref('');
 const previewTitle = ref('');
 const listCategory = ref([]);
 const urlImage= ref("");
+const product = ref("");
 
 //created
 onBeforeMount( async () => {
-    let res = await apiProduct.getDetailProduct();
+    let params ={
+        id: route.query.id
+    }
+    let res = await apiProduct.getDetailProduct(params);
     if(res.status){
-        console.log(res.data);
-        listCategory.value  = res.data
+        let  product  = res.data;
+        formState.name =  product.name;
+        formState.category =  product.id_category;
+        formState.price =  product.price;
+        formState.quantity =  product.quantity;
+        formState.description =  product.description;
+        files.value = JSON.parse(product.image);
     }
 });
 
@@ -123,16 +133,26 @@ const update = () =>{
         name: formState.name,
         price: formState.price,
         quantity: formState.quantity,
-        category: formState.category,
+        id_category: formState.category,
         description: formState.description,
-        image: files.value
+        image: files.value,
+        id: route.query.id
     }
-    apiProduct.UpdateProduct(params);
+    apiProduct.UpdateProduct(params).then(res => {
+        if(res.status){
+            message.success('Cập nhật sản phẩm thành công');
+        }
+    }).catch(e =>{
+        message.error('Cập nhật sản phẩm thất bại')
+    });
 
     
 }
 
 const addImage = () =>{
+    if(!urlImage.value){
+        return;
+    }
     files.value.push(urlImage.value);
     urlImage.value = "";
 }
@@ -148,12 +168,37 @@ const handleInputFile = (evt)=>{
     // nameFile.value = file.name;
     // fileImport.value = file;
 }
+
+const back = () =>{
+    router.push({
+        name: "AdminListProduct"
+    })
+}
+
+const getCategory = (data) =>{
+    let category = '';
+    if(data === 1){
+        category = "Điện thoại"
+    }else if(data === 2){
+        category = "Laptop"
+    }else if(data === 3){
+        category = "Tivi"
+    }else{
+        category = "Phụ kiện"
+    }
+    return category;
+}
 </script>
 
 <style lang="scss" scoped>
 .admin{
     width: 70%;
     margin: 0 auto;
+    position: relative;
+    .back{
+        position: absolute;
+        top: 30px;
+    }
     .title{
         text-align: center;
         font-size: 50px;

@@ -93,7 +93,7 @@
 
 
                 <a-form-item :wrapper-col="{ offset: 19, span: 16 }">
-                <a-button type="primary" @click="login" :disabled="disabledLogin">Đăng nhập</a-button>
+                <a-button type="primary" @click="login" @keyup.enter="login" :disabled="disabledLogin">Đăng nhập</a-button>
                 </a-form-item>
             </a-form>
         </a-modal>
@@ -108,14 +108,15 @@
 </template>
 
 <script setup>
-import { ref, defineComponent , reactive , computed , watch} from "vue";
+import { ref, defineComponent , reactive , computed , watch , onBeforeMount} from "vue";
 import { useRoute } from 'vue-router';
 import { useRouter } from 'vue-router';
 import { TabletOutlined, HomeOutlined, LaptopOutlined , UsbOutlined , DesktopOutlined , ShoppingCartOutlined , UserOutlined} from '@ant-design/icons-vue';
-
+import { message, Modal } from "ant-design-vue";
 const route = useRoute();
 const router = useRouter();
 const menuActive = ref(['home']);
+
 
 const checkModal = ref(false);
 const user = ref(null);
@@ -129,6 +130,15 @@ const listBanner = [
     "https://static.vecteezy.com/system/resources/thumbnails/002/006/605/small/paper-art-shopping-online-on-smartphone-and-new-buy-sale-promotion-pink-backgroud-for-banner-market-ecommerce-free-vector.jpg",
     "https://static.vecteezy.com/system/resources/thumbnails/004/299/815/small/online-shopping-on-phone-buy-sell-business-digital-web-banner-application-money-advertising-payment-ecommerce-illustration-search-vector.jpg"
 ];
+
+onBeforeMount( async () => {
+    // if(!user.value){
+    //     router.push({
+    //         name: "Home"
+    //     })
+    // }
+});
+
 
 
 
@@ -184,6 +194,7 @@ const login = () => {
         }
     }
     checkModal.value = false;
+    
 }
 const logout = () => {
     user.value = null;

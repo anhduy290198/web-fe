@@ -1,9 +1,13 @@
 <template>
     <div class="detail-product">
+        <div class="back">
+            <a-button @click="back">
+                Quay lại
+            </a-button>
+        </div>
         <div class="title">
             Chi tiết sản phẩm
         </div>
-        
         <div class="product">
             <div class="product-image">
                 <a-carousel arrows>
@@ -32,13 +36,13 @@
                     {{product.description}}
                 </div>
                 <div class="action">
-                    <a-button size="large">
+                    <a-button size="large" @click="addToCart(product)">
                         <template #icon>
                             <shopping-cart-outlined />
                         </template>
                         Thêm vào giỏ
                     </a-button>
-                    <a-button style="margin-left: 20px" size="large">
+                    <a-button style="margin-left: 20px" size="large" :disabled="true">
                         Mua ngay
                     </a-button>
                 </div>
@@ -53,6 +57,7 @@ import { TabletOutlined, HomeOutlined, LaptopOutlined , UsbOutlined , DesktopOut
 import { useRoute } from 'vue-router';
 import { useRouter } from 'vue-router';
 import apiProduct from "../../api/product";
+import { message, Modal } from "ant-design-vue";
 
 const route = useRoute();
 const router = useRouter();
@@ -65,18 +70,49 @@ const product = ref({});
 //created
 onBeforeMount( async () => {
     let res = await apiProduct.getDetailProduct({
-        id_product: 1
+        id: props.id
     });
     if(res.status){
         product.value = res.data;
         product.value.image = JSON.parse(product.value.image);
-        console.log(product.value);
     }
 });
 
 const formatPrice = (price) => {
-    console.log(price.toLocaleString('it-IT', {style : 'currency', currency : 'VND'}));
   return price.toLocaleString('it-IT', {style : 'currency', currency : 'VND'});
+}
+
+const addToCart = (product) =>{
+    let cart = localStorage.getItem("cart");
+    let listProduct = [];
+    if(cart){
+        listProduct = JSON.parse(cart);
+    }
+
+    if(listProduct.length){
+        let index = listProduct.findIndex(ele => product.id === ele.id);
+        if(index > -1){
+            listProduct[index].amount++;
+        }else{
+            product.amount = 1;
+            listProduct.push(product);
+        }
+    }else{
+        product.amount = 1;
+        listProduct.push(product);
+    }
+    localStorage.setItem("cart", JSON.stringify(listProduct))
+
+    message.success("Thêm vào giỏ hàng thành công");
+}
+
+const back = () =>{
+    router.push({
+        name: "List",
+        query: {
+            type: route.query.type
+        }
+    })
 }
 
 </script>
@@ -85,6 +121,11 @@ const formatPrice = (price) => {
 .detail-product{
     width: 70%;
     margin: 0 auto;
+    position: relative;
+    .back{
+        position: absolute;
+        top: 30px;
+    }
     .title{
         text-align: center;
         font-size: 50px;
