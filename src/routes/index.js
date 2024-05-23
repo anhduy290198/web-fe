@@ -53,16 +53,14 @@ const routes = [
         meta: {
             title: 'Quản trị viên',
         },
-        children: [
-            {
-                path: '/create',
-                name: "AdminCreateProduct",
-                component: AdminCreateProduct ,
-                meta: {
-                    title: 'Quản trị viên 1',
-                },
-            },
-        ]
+    },
+    {
+        path: '/admin/create',
+        name: "AdminCreateProduct",
+        component: AdminCreateProduct ,
+        meta: {
+            title: 'Quản trị viên 1',
+        },
     },
 ];
 

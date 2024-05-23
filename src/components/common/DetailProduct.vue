@@ -25,7 +25,7 @@
                     {{product.name}}
                 </h1>
                 <h1 class="product-price">
-                    {{formatPrice(product.price)}}
+                    {{product.price ? formatPrice(product.price) : 0 + ' VND'}}
                 </h1>
                 <div class="quantity">Còn hàng</div>
                 <div class="product-description">
@@ -48,10 +48,11 @@
 </template>
 
 <script setup>
-import { ref, defineComponent , computed} from "vue";
+import { ref, defineComponent , computed , onBeforeMount} from "vue";
 import { TabletOutlined, HomeOutlined, LaptopOutlined , UsbOutlined , DesktopOutlined , ShoppingCartOutlined , UserOutlined , LeftCircleOutlined , RightCircleOutlined} from '@ant-design/icons-vue';
 import { useRoute } from 'vue-router';
 import { useRouter } from 'vue-router';
+import apiProduct from "../../api/product";
 
 const route = useRoute();
 const router = useRouter();
@@ -59,21 +60,25 @@ const router = useRouter();
 const props = defineProps({
     id: { type: Number },
 });
-const product = ref({
-    name: 'Iphone 14 Pro Max 256 GB',
-    image: ['https://cdn.hoanghamobile.com/i/preview/Uploads/2022/09/08/anh-chup-man-hinh-2022-09-08-luc-01-57-13-removebg-preview.png',
-            'https://cdn.hoanghamobile.com/i/preview/Uploads/2022/09/08/anh-chup-man-hinh-2022-09-08-luc-01-58-38-removebg-preview.png',
-            'https://cdn.hoanghamobile.com/i/preview/Uploads/2022/09/08/2222.png',
-            'https://cdn.hoanghamobile.com/i/preview/Uploads/2022/09/08/anh-chup-man-hinh-2022-09-08-luc-01-59-53-removebg-preview.png'
-            ],
-    amount: 10,
-    price: 10000000,
-    description: "Vẫn là thiết kế vuông vắn hiện đại giống như những thế hệ tiền nhiệm, phiên bản iPhone 15 Plus là một lựa chọn hoàn hảo cho người dùng khi vừa vặn về kích thước cũng như hầu bao, không quá nhỏ như iPhone 15 hay giá quá cao như iPhone 15 Pro Max. Bên cạnh đó là 3 phiên bản bộ nhớ trong lần lượt là 128GB/256GB/512GB đem đến sự lựa chọn đa dạng cho người dùng iPhone."
-})
+const product = ref({});
+
+//created
+onBeforeMount( async () => {
+    let res = await apiProduct.getDetailProduct({
+        id_product: 1
+    });
+    if(res.status){
+        product.value = res.data;
+        product.value.image = JSON.parse(product.value.image);
+        console.log(product.value);
+    }
+});
 
 const formatPrice = (price) => {
+    console.log(price.toLocaleString('it-IT', {style : 'currency', currency : 'VND'}));
   return price.toLocaleString('it-IT', {style : 'currency', currency : 'VND'});
 }
+
 </script>
 
 <style lang="scss" scoped>

@@ -4,7 +4,7 @@
             <img src="../../../public/image/logo.png" alt="">
             <div class="text">Online Shop</div>
         </div>
-        <div class="menu">
+        <div class="menu" v-if="!user">
             <a-menu v-model:selectedKeys="menuActive" mode="horizontal" style="width: 600px" @click="changeMenu($event)">
                 <a-menu-item key="home">
                     <template #icon>
@@ -38,11 +38,12 @@
                 </a-menu-item>
             </a-menu>
         </div>
+        <div class="admin" v-else>Quản trị viên</div>
         <div class="action">
             <div class="user" v-if="user">
                 Xin chào <b>{{user.name}}</b> !
             </div>
-            <a-button type="link" @click="cart">
+            <a-button type="link" @click="cart" v-if="!user">
                 <template #icon>
                     <shopping-cart-outlined style="color: black"/>
                 </template>
@@ -76,10 +77,10 @@
             >
                 <a-form-item
                 label="Tên đăng nhập"
-                name="name"
+                name="username"
                 :rules="[{ required: true, message: 'Vui lòng nhập tên đăng nhập!' }]"
                 >
-                <a-input v-model:value="formState.name" />
+                <a-input v-model:value="formState.username" />
                 </a-form-item>
 
                 <a-form-item
@@ -97,7 +98,7 @@
             </a-form>
         </a-modal>
     </div>
-    <div class="banner">
+    <div class="banner" v-if="!user">
         <a-carousel autoplay>
             <div v-for="banner in listBanner" :key="banner">
                 <img :src="banner" >
@@ -119,7 +120,7 @@ const menuActive = ref(['home']);
 const checkModal = ref(false);
 const user = ref(null);
 const formState = reactive({
-  name: '',
+  username: '',
   password: ''
 });
 
@@ -174,8 +175,13 @@ const cart = () =>{
 }
 
 const login = () => {
-    user.value = {
-        name: "Duy"
+    if(formState.username === 'duy' && formState.password === "123"){
+        router.push({
+            name: "AdminListProduct"
+        })
+        user.value = {
+            name: formState.username
+        }
     }
     checkModal.value = false;
 }
@@ -185,7 +191,7 @@ const logout = () => {
 }
 
 const disabledLogin = computed(() => {
-    return !(formState.name && formState.password);
+    return !(formState.username && formState.password);
 });
 
 watch(checkModal, (value) => {
@@ -219,6 +225,10 @@ watch(checkModal, (value) => {
     }
     .menu{
         padding-top: calc(60px - 46px);
+    }
+    .admin{
+        line-height: 60px;
+        font-size: 30px;
     }
     .action{
         padding-top: calc(60px - 33px);

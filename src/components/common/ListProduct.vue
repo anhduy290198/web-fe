@@ -39,7 +39,7 @@
             </div>
         </div>
         <div class="list-product">
-            <div class="product" v-for="product in data" :key="product">
+            <div class="product" v-for="product in listProduct" :key="product">
                 <div class="cursor-pointer" @click="detailProduct(product)">
                     <div class="product-image">
                         <img :src="product.image">
@@ -65,39 +65,59 @@
             </div>
         </div>
         <div class="pagination">
-            <a-pagination v-model:current="currentPage" :total="data.length" show-less-items />
+            <a-pagination v-model:current="currentPage" :total="listProduct.length" show-less-items />
         </div>
     </div>
 </template>
 
 <script setup>
-import { ref, defineComponent , computed} from "vue";
+import apiProduct from "../../api/product"
+import { ref, defineComponent , computed,  onBeforeMount } from "vue";
 import { TabletOutlined, HomeOutlined, LaptopOutlined , UsbOutlined , DesktopOutlined , ShoppingCartOutlined , UserOutlined} from '@ant-design/icons-vue';
 import { useRoute } from 'vue-router';
 import { useRouter } from 'vue-router';
 
 const route = useRoute();
 const router = useRouter();
+const idCategory = ref();
+const listProduct = ref([]);
 const title = computed(() => {
     let title = 'Trang chủ';
     switch (props.type) {
         case 'Phone':
-            title = "Điện thoại"
+            title = "Điện thoại";
+            idCategory.value = 1;
             break;
         case 'Laptop':
-            title = "Laptop"
+            title = "Laptop";
+            idCategory.value = 2;
             break;
         case 'Tivi':
-            title = "Tivi"
+            title = "Tivi";
+            idCategory.value = 3;
             break;
         case 'Accessory':
-            title = "Phụ kiện"
+            title = "Phụ kiện";
+            idCategory.value = 4;
             break;
         default:
-            title = "Trang chủ"
+            title = "Trang chủ";
             break;
     }
     return title;
+});
+
+//created
+onBeforeMount( async () => {
+    let res = await apiProduct.getListProduct({
+        id_category: 1
+    });
+    if(res.status){
+        res.data.forEach(product => {
+            product.image = JSON.parse(product.image);
+        });
+        listProduct.value  = res.data;
+    }
 });
 
 const props = defineProps({
@@ -105,60 +125,16 @@ const props = defineProps({
 });
 
 const filterPrice = ref('desc');
-const data = ref([
-    {
-        name: 'Iphone 14 Pro Max 256 GB',
-        image: 'https://cdn.tgdd.vn/Products/Images/42/251192/iphone-14-pro-max-tim-thumb-600x600.jpg',
-        amount: 10,
-        price: 10000000
-    },
-    {
-        name: 'Iphone 14 Pro Max 256 GB',
-        image: 'https://cdn.tgdd.vn/Products/Images/42/251192/iphone-14-pro-max-tim-thumb-600x600.jpg',
-        amount: 10,
-        price: 10000000
-    },
-    {
-        name: 'Iphone 14 Pro Max 256 GB',
-        image: 'https://cdn.tgdd.vn/Products/Images/42/251192/iphone-14-pro-max-tim-thumb-600x600.jpg',
-        amount: 10,
-        price: 10000000
-    },
-    {
-        name: 'Iphone 14 Pro Max 256 GB',
-        image: 'https://cdn.tgdd.vn/Products/Images/42/251192/iphone-14-pro-max-tim-thumb-600x600.jpg',
-        amount: 10,
-        price: 10000000
-    },
-    {
-        name: 'Iphone 14 Pro Max 256 GB',
-        image: 'https://cdn.tgdd.vn/Products/Images/42/251192/iphone-14-pro-max-tim-thumb-600x600.jpg',
-        amount: 10,
-        price: 10000000
-    },
-    {
-        name: 'Iphone 14 Pro Max 256 GB',
-        image: 'https://cdn.tgdd.vn/Products/Images/42/251192/iphone-14-pro-max-tim-thumb-600x600.jpg',
-        amount: 10,
-        price: 10000000
-    },
-    {
-        name: 'Iphone 14 Pro Max 256 GB',
-        image: 'https://cdn.tgdd.vn/Products/Images/42/251192/iphone-14-pro-max-tim-thumb-600x600.jpg',
-        amount: 10,
-        price: 10000000
-    },
-]);
 const currentPage = ref(1);
 
 const handleChange = () =>{
 
 }
 
-const detailProduct = () => {
+const detailProduct = (product) => {
     let query = {
         type: route.query.type,
-        id :  1
+        id :  product.id
     }
     router.push({
         name: 'Detail',
