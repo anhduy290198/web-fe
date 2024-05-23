@@ -5,6 +5,7 @@ import Cart from "../pages/Cart.vue";
 import Pay from "../pages/Pay.vue";
 import AdminCreateProduct from "../pages/Admin/AdminCreateProduct.vue";
 import AdminListProduct from "../pages/Admin/AdminListProduct.vue";
+import AdminUpdateProduct from "../pages/Admin/AdminUpdateProduct.vue";
 import ListProduct from "../pages/Product/List.vue";
 import DetailProduct from "../pages/Product/Detail.vue";
 
@@ -59,7 +60,15 @@ const routes = [
         name: "AdminCreateProduct",
         component: AdminCreateProduct ,
         meta: {
-            title: 'Quản trị viên 1',
+            title: 'Quản trị viên',
+        },
+    },
+    {
+        path: '/admin/update',
+        name: "AdminUpdateProduct",
+        component: AdminUpdateProduct ,
+        meta: {
+            title: 'Quản trị viên',
         },
     },
 ];

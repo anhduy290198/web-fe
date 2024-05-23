@@ -7,7 +7,7 @@
                 <template #bodyCell="{ column,record, index }">
                     <template v-if="column.dataIndex === 'action'">
                         <div style="display: flex; justify-content: space-around">
-                            <a-button @click="editProduct">
+                            <a-button @click="editProduct(record)">
                                 <template #icon>
                                     <edit-outlined />
                                 </template>
@@ -81,8 +81,13 @@ const createProduct = () =>{
     })
 }
 
-const editProduct = () =>{
-    
+const editProduct = (product) =>{
+    router.push({
+        name: "AdminUpdateProduct",
+        query: {
+            id: product.id
+        }
+    })
 }
 
 

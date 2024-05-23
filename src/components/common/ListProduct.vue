@@ -3,7 +3,7 @@
         <div class="title">{{title}}</div>
         <div class="search">
             <div class="input-search">
-                <a-input-search  placeholder="Nhập tên sản phẩm"/>
+                <a-input-search v-model:value="textSearch"  placeholder="Nhập tên sản phẩm"/>
             </div>
             <div class="filter">
                 <div class="filter-detail">
@@ -14,7 +14,7 @@
                         <a-select
                             v-model:value="filterPrice"
                             style="width: 160px"
-                            @change="handleChange"
+                            @change="handleFilterPrice"
                             >
                             <a-select-option value="asc">Từ thấp đến cao</a-select-option>
                             <a-select-option value="desc">Từ cao đến thấp</a-select-option>
@@ -23,23 +23,26 @@
                 </div>
                 <div class="filter-detail">
                     <div class="label">
-                        Giá
+                        Sản phẩm mới cũ
                     </div>
                     <div class="filter-type">
                         <a-select
-                            v-model:value="filterPrice"
+                            v-model:value="filterDate"
                             style="width: 160px"
-                            @change="handleChange"
+                            @change="handleFilterDate"
                             >
-                            <a-select-option value="asc">Từ thấp đến cao</a-select-option>
-                            <a-select-option value="desc">Từ cao đến thấp</a-select-option>
+                            <a-select-option value="new">Từ mới đến cũ</a-select-option>
+                            <a-select-option value="old">Từ cũ đến mới</a-select-option>
                         </a-select>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="list-product">
-            <div class="product" v-for="product in listProduct" :key="product">
+        <a-empty v-if="!dataSource.length" :description="false">
+            Không có dữ liệu
+        </a-empty>
+        <div class="list-product" v-else>
+            <div class="product" v-for="product in dataSource" :key="product">
                 <div class="cursor-pointer" @click="detailProduct(product)">
                     <div class="product-image">
                         <img :src="product.image">
@@ -81,6 +84,29 @@ const route = useRoute();
 const router = useRouter();
 const idCategory = ref();
 const listProduct = ref([]);
+const textSearch = ref("");
+const loadingData = ref(false);
+
+const filterPrice = ref();
+const filterDate = ref();
+const currentPage = ref(1);
+const props = defineProps({
+    type: { type: String },
+});
+
+//created
+onBeforeMount( async () => {
+    let res = await apiProduct.getListProduct({
+        id_category: 1
+    });
+    if(res.status){
+        res.data.forEach(product => {
+            product.image = JSON.parse(product.image);
+        });
+        listProduct.value  = res.data;
+    }
+});
+
 const title = computed(() => {
     let title = 'Trang chủ';
     switch (props.type) {
@@ -107,27 +133,26 @@ const title = computed(() => {
     return title;
 });
 
-//created
-onBeforeMount( async () => {
-    let res = await apiProduct.getListProduct({
-        id_category: 1
-    });
-    if(res.status){
-        res.data.forEach(product => {
-            product.image = JSON.parse(product.image);
-        });
-        listProduct.value  = res.data;
-    }
-});
+const dataSource = computed(()=>{
+    loadingData.value = true;
+    let listSearch = textSearch.value.toLowerCase().split(" ");
+    let data = listProduct.value;
+    data = data.filter(ele =>{
+        let resSearch = listSearch.every(search => 
+            vnToStr(ele.name).toLowerCase().indexOf(vnToStr(search)) > -1
+        );
+        return resSearch
+    })
 
-const props = defineProps({
-    type: { type: String },
-});
+    return data;
+})
 
-const filterPrice = ref('desc');
-const currentPage = ref(1);
 
-const handleChange = () =>{
+
+const handleFilterPrice = () =>{
+
+}
+const handleFilterDate = () =>{
 
 }
 
@@ -144,6 +169,26 @@ const detailProduct = (product) => {
 
 const formatPrice = (price) => {
   return price.toLocaleString('it-IT', {style : 'currency', currency : 'VND'});
+}
+
+const vnToStr = (text) => {
+    if (typeof text !== 'string') return;
+
+    text = text.toLowerCase();
+    text = text.replace(/à|á|ạ|ả|ã|â|ầ|ấ|ậ|ẩ|ẫ|ă|ằ|ắ|ặ|ẳ|ẵ/g, "a");
+    text = text.replace(/è|é|ẹ|ẻ|ẽ|ê|ề|ế|ệ|ể|ễ/g, "e");
+    text = text.replace(/ì|í|ị|ỉ|ĩ/g, "i");
+    text = text.replace(/ò|ó|ọ|ỏ|õ|ô|ồ|ố|ộ|ổ|ỗ|ơ|ờ|ớ|ợ|ở|ỡ/g, "o");
+    text = text.replace(/ù|ú|ụ|ủ|ũ|ư|ừ|ứ|ự|ử|ữ/g, "u");
+    text = text.replace(/ỳ|ý|ỵ|ỷ|ỹ/g, "y");
+    text = text.replace(/đ/g, "d");
+    text = text.replace(
+        /!|@|%|\^|\*|\(|\)|\+|\=|\<|\>|\?|\/|,|\.|\:|\;|\'|\"|\&|\#|\[|\]|~|\$|_|`|-|{|}|\||\\/g,
+        " "
+    );
+    text = text.replace(/\s+/g, " ");
+    text = text.trim();
+    return text;
 }
 
 </script>
@@ -189,7 +234,7 @@ const formatPrice = (price) => {
         flex: 1;
         gap: 100px;
         justify-content: space-between;
-        max-height: 500px;
+        max-height: 700px;
         overflow: auto;
         box-shadow: 0px 2px 0px rgba(0, 0, 0, 0.043);
         padding-right: 5px;
