@@ -103,7 +103,7 @@ const props = defineProps({
 //created
 onBeforeMount( () => {
     getListProduct();
-    console.log(props.type);
+    
 });
 
 onMounted(() => {
@@ -112,8 +112,9 @@ onMounted(() => {
 
 
 
-watch(props.type, (value) => {
+watch(props, (value) => {
     console.log(value);
+    getListProduct();
 });
 
 const getIdCategory = () =>{
@@ -141,6 +142,7 @@ const getListProduct = async (type) =>{
         params.type = type ? type : null;
         params.filter = type ? type === 'price' ? filterPrice.value : filterDate.value : null
     }
+    console.log(params);
     let res = await apiProduct.getListProduct(params);
 
     if(res.status){

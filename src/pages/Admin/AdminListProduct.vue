@@ -34,7 +34,7 @@
                                     <edit-outlined />
                                 </template>
                             </a-button>
-                            <a-button @click="deleteProduct(record)">
+                            <a-button @click="openModalConfirm(record)">
                                 <template #icon>
                                     <delete-outlined />
                                 </template>
@@ -44,7 +44,11 @@
                 </template>
             </a-table>
         </div>
-
+    <a-modal :visible="modalConfirm" title="Xóa sản phẩm" okText="Xóa" cancelText="Hủy" @ok="deleteProduct" @cancel="modalConfirm = false">
+        <div>
+            Bạn có chắc muốn xóa sản phẩm này?
+        </div>
+    </a-modal>
     </div>
 </template>
 
@@ -88,6 +92,8 @@ const categoryId = ref('');
 const textSearch = ref('');
 const loadingData = ref(true);
 const user = ref(null);
+const modalConfirm = ref(false);
+const idDelete = ref(null);
 
 //created
 onBeforeMount( () => {
@@ -151,14 +157,35 @@ const editProduct = (product) =>{
     })
 }
 
+const openModalConfirm = (product) =>{
+    modalConfirm.value = true;
+    idDelete.value = product.id
+}
 
-const deleteProduct = (product) =>{
+
+const deleteProduct = async (product) =>{
     
 
+    await apiProduct.DeleteProduct({
+        id: idDelete.value,
+        username: user.value.username,
+        password: user.value.password
+    }).then(res =>{
+        if(res.status){
+            message.success("Xóa sản phẩm thành công");
+            getListProduct();
+        }
+    }).catch(e =>{
+        message.error("Xóa sản phẩm thất bại");
+    })
+
+    modalConfirm.value = false;
     // Modal.confirm({
     //     title: 'Xóa sản phẩm?',
     //     icon: createVNode(ExclamationCircleOutlined),
-    //    content: createVNode('div', { style: 'color:#000000D9;' }, 'Bạn có chắc chắn muốn xóa sản phẩm này?'),
+    //     content: createVNode('div', { style: 'color:#000000D9;' }, 'Bạn có chắc chắn muốn xóa sản phẩm này?'),
+    //     maskClosable: true,
+    //     closable: true,
     //     onOk() {
     //         apiProduct.DeleteProduct({
     //             id: product.id
@@ -175,20 +202,20 @@ const deleteProduct = (product) =>{
     //     },
     //     okText: "Xóa",
     //     cancelText: "Huỷ",
-    //   });
-        console.log(user);
-        apiProduct.DeleteProduct({
-            id: product.id,
-            username: user.value.username,
-            password: user.value.password
-        }).then(res =>{
-            if(res.status){
-                message.success("Xóa sản phẩm thành công");
-                getListProduct();
-            }
-        }).catch(e =>{
-            message.error("Xóa sản phẩm thất bại");
-        })
+    // });
+    //     console.log(user);
+    //     apiProduct.DeleteProduct({
+    //         id: product.id,
+    //         username: user.value.username,
+    //         password: user.value.password
+    //     }).then(res =>{
+    //         if(res.status){
+    //             message.success("Xóa sản phẩm thành công");
+    //             getListProduct();
+    //         }
+    //     }).catch(e =>{
+    //         message.error("Xóa sản phẩm thất bại");
+    //     })
 }
 
 const buy = () =>{

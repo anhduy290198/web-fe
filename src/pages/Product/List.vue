@@ -6,18 +6,22 @@
 
 <script setup>
 import ListProduct from "../../components/common/ListProduct.vue";
-import { ref, watch, getCurrentInstance,onBeforeMount, computed} from 'vue';
+import { ref, watch, getCurrentInstance, onBeforeMount, computed , onMounted} from 'vue';
 import { useRoute } from 'vue-router';
 import { useRouter } from 'vue-router';
 const route = useRoute();
 const router = useRouter();
-const type = ref();
+const type = ref("");
 
 //created
-onBeforeMount(async () => {
+onMounted(async () => {
     if(route.query.type){
         type.value = route.query.type;
     }
+});
+
+watch(route, (value) => {
+    type.value = value.query.type;
 });
 
 
