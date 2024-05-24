@@ -110,12 +110,21 @@ const previewImage = ref('');
 const previewTitle = ref('');
 const listCategory = ref([]);
 const urlImage= ref("");
+const user = ref(null);
 
 //created
 onBeforeMount( async () => {
     let res = await apiCategory.listCategory();
     if(res.status){
         listCategory.value  = res.data
+    }
+
+    let userLocal = localStorage.getItem('user');
+    if(userLocal){
+        userLocal = JSON.parse(userLocal);
+        if(userLocal.permission === 1){
+            user.value = userLocal;
+        }
     }
 });
 
@@ -130,7 +139,9 @@ const create = () =>{
         quantity: formState.quantity,
         category: formState.category,
         description: formState.description,
-        image: files.value
+        image: files.value,
+        username: user.value.username,
+        password: user.value.password
     }
     apiProduct.CreateProduct(params).then(res =>{
         if(res.status){

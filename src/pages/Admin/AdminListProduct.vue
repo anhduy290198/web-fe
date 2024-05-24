@@ -87,11 +87,20 @@ const listCategory = ref([]);
 const categoryId = ref('');
 const textSearch = ref('');
 const loadingData = ref(true);
+const user = ref(null);
 
 //created
 onBeforeMount( () => {
     getListProduct();
     getListCategory();
+
+    let userLocal = localStorage.getItem('user');
+    if(userLocal){
+        userLocal = JSON.parse(userLocal);
+        if(userLocal.permission === 1){
+            user.value = userLocal;
+        }
+    }
 });
 
 
@@ -167,9 +176,11 @@ const deleteProduct = (product) =>{
     //     okText: "Xóa",
     //     cancelText: "Huỷ",
     //   });
-
+        console.log(user);
         apiProduct.DeleteProduct({
-            id: product.id
+            id: product.id,
+            username: user.value.username,
+            password: user.value.password
         }).then(res =>{
             if(res.status){
                 message.success("Xóa sản phẩm thành công");

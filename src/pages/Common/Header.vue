@@ -113,6 +113,7 @@ import { useRoute } from 'vue-router';
 import { useRouter } from 'vue-router';
 import { TabletOutlined, HomeOutlined, LaptopOutlined , UsbOutlined , DesktopOutlined , ShoppingCartOutlined , UserOutlined} from '@ant-design/icons-vue';
 import { message, Modal } from "ant-design-vue";
+import apiUser from "../../api/user";
 const route = useRoute();
 const router = useRouter();
 const menuActive = ref(['home']);
@@ -132,11 +133,18 @@ const listBanner = [
 ];
 
 onBeforeMount( async () => {
-    // if(!user.value){
-    //     router.push({
-    //         name: "Home"
-    //     })
-    // }
+    let userLocal = localStorage.getItem('user');
+    if(userLocal){
+        userLocal = JSON.parse(userLocal);
+        if(userLocal.permission === 1){
+            user.value = userLocal;
+        }
+    }
+    if(!user.value){
+        router.push({
+            name: "Home"
+        })
+    }
 });
 
 
@@ -185,20 +193,28 @@ const cart = () =>{
 }
 
 const login = () => {
-    if(formState.username === 'duy' && formState.password === "123"){
-        router.push({
-            name: "AdminListProduct"
-        })
-        user.value = {
-            name: formState.username
+    apiUser.login({
+        username: formState.username,
+        password: formState.password
+    }).then(res =>{
+        if(res.status){
+            user.value = res.data;
+            if(user.value.permission === 1){
+                router.push({
+                    name: "AdminListProduct"
+                })
+                checkModal.value = false;
+                localStorage.setItem("user",JSON.stringify(user.value))
+            }
         }
-    }
-    checkModal.value = false;
-    
+    }).catch(e => {
+        message.error("Đăng nhập thất bại!");
+    })
 }
 const logout = () => {
     user.value = null;
     changeMenu({key: "home"});
+    localStorage.removeItem("user",JSON.stringify(user.value))
 }
 
 const disabledLogin = computed(() => {

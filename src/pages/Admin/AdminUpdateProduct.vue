@@ -106,6 +106,7 @@ const previewTitle = ref('');
 const listCategory = ref([]);
 const urlImage= ref("");
 const product = ref("");
+const user = ref(null);
 
 //created
 onBeforeMount( async () => {
@@ -122,6 +123,13 @@ onBeforeMount( async () => {
         formState.description =  product.description;
         files.value = JSON.parse(product.image);
     }
+    let userLocal = localStorage.getItem('user');
+    if(userLocal){
+        userLocal = JSON.parse(userLocal);
+        if(userLocal.permission === 1){
+            user.value = userLocal;
+        }
+    }
 });
 
 const disabled = computed(() => {
@@ -136,7 +144,9 @@ const update = () =>{
         id_category: formState.category,
         description: formState.description,
         image: files.value,
-        id: route.query.id
+        id: route.query.id,
+        username: user.value.username,
+        password: user.value.password
     }
     apiProduct.UpdateProduct(params).then(res => {
         if(res.status){
@@ -164,9 +174,6 @@ const deleteImage = (index) =>{
 const handleInputFile = (evt)=>{
     files.value = evt.target.files;
 
-    // let file = evt.target.files[0];
-    // nameFile.value = file.name;
-    // fileImport.value = file;
 }
 
 const back = () =>{
